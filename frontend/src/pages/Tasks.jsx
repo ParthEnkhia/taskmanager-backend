@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { logout } from "../utils/auth";
 
 export default function Tasks() {
-  const [tasks, setTasks] = useState("");
-  const [list, setList] = useState([]);
+  const [task, setTask] = useState("");
+  const [tasks, setTasks] = useState([]);
 
   const fetchTasks = async () => {
     const res = await api.get("/tasks");
-    setList(res.data);
+    setTasks(res.data);
   };
 
   const addTask = async () => {
-    await api.post("/tasks", { title: tasks });
-    setTasks("");
+    if (!task.trim()) return;
+    await api.post("/tasks", { title: task });
+    setTask("");
     fetchTasks();
   };
 
@@ -27,21 +27,42 @@ export default function Tasks() {
   }, []);
 
   return (
-    <div>
-      <h2>My Tasks</h2>
-      <input value={tasks} onChange={e => setTasks(e.target.value)} />
-      <button onClick={addTask}>Add</button>
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <h2 className="text-2xl font-semibold text-slate-700 mb-6">
+        My Tasks
+      </h2>
 
-      <ul>
-        {list.map(task => (
-          <li key={task._id}>
-            {task.title}
-            <button onClick={() => deleteTask(task._id)}>X</button>
-          </li>
+      <div className="flex gap-2 mb-6">
+        <input
+          className="flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+          placeholder="Add a new task..."
+          value={task}
+          onChange={(e) => setTask(e.target.value)}
+        />
+        <button
+          onClick={addTask}
+          className="bg-blue-600 text-white px-4 rounded-md hover:bg-blue-700 transition"
+        >
+          Add
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {tasks.map((t) => (
+          <div
+            key={t._id}
+            className="bg-white border border-slate-200 rounded-lg px-4 py-3 flex justify-between items-center shadow-sm"
+          >
+            <span className="text-slate-700">{t.title}</span>
+            <button
+              onClick={() => deleteTask(t._id)}
+              className="text-red-400 hover:text-red-600"
+            >
+              ✕
+            </button>
+          </div>
         ))}
-      </ul>
-
-      <button onClick={logout}>Logout</button>
+      </div>
     </div>
   );
 }
