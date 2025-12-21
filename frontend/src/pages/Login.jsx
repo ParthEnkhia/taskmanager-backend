@@ -1,53 +1,69 @@
 import { useState } from "react";
-import api from "../api/axios";
-import { saveToken } from "../utils/auth";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
-export default function Login() {
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    const res = await api.post("/auth/login", { email, password });
-    saveToken(res.data.token);
-    navigate("/tasks");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    console.log("Login clicked");
+
+    try {
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      console.log("Response:", res.data);
+
+      localStorage.setItem("token", res.data.token);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Login failed:", err);
+      alert("Invalid credentials");
+    }
   };
 
   return (
-    <div className="flex justify-center items-center py-20">
-      <div className="bg-white w-full max-w-sm rounded-xl shadow-sm border border-slate-200 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-6 rounded-lg shadow-md w-80"
+      >
         <h2 className="text-xl font-semibold text-center mb-6 text-slate-700">
-          Welcome back
+          Login
         </h2>
 
         <input
-          className="w-full mb-3 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          type="email"
           placeholder="Email"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="w-full mb-4 px-3 py-2 border rounded"
+          required
         />
 
         <input
-          className="w-full mb-4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           type="password"
           placeholder="Password"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="w-full mb-4 px-3 py-2 border rounded"
+          required
         />
 
         <button
-          onClick={handleLogin}
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
           Login
         </button>
-
-        <p className="text-center text-sm text-slate-500 mt-4">
-          No account?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Register
-          </Link>
-        </p>
-      </div>
+      </form>
     </div>
   );
 }
+
+export default Login;
